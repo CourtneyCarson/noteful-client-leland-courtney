@@ -6,6 +6,8 @@ import NotePageNav from '../NotePageNav/NotePageNav';
 import NoteListMain from '../NoteListMain/NoteListMain';
 import NotePageMain from '../NotePageMain/NotePageMain';
 import dummyStore from '../dummy-store';
+import Context from '../Context'
+import apiconfig from '../apiconfig'
 import {getNotesForFolder, findNote, findFolder} from '../notes-helpers';
 import './App.css';
 
@@ -15,10 +17,36 @@ class App extends Component {
         folders: []
     };
 
-    componentDidMount() {
+  /////// API CALL ///////////////////
+  componentDidMount() {
+    console.log(apiconfig.API_ENDPOINT)
+    // setTimeout(() => this.setState(dummyStore), 600);
+    Promise.all([
+      fetch(`${apiconfig.API_ENDPOINT}/notes`),
+      fetch(`${apiconfig.API_ENDPOINT}/folders`)
+    ])
+      .then(([notesResponse, foldersResponse]) => {
+        if (!notesResponse.ok) {
+          return notesResponse.json().then(event => Promise.reject(event));
+        }
+        if (!foldersResponse.ok) {
+          return foldersResponse.json().then(event => Promise.reject(event));
+        }
+        return Promise.all([notesResponse.json(), foldersResponse.json()])
+      })
+      .then(([notes, folders]) => {
+        this.setState({ notes, folders })
+      })
+      .catch(error => {
+        console.error({ error })
+      })
+  }
+
+
+
         // fake date loading from API call
-        setTimeout(() => this.setState(dummyStore), 600);
-    }
+        // setTimeout(() => this.setState(dummyStore), 600);
+    
 
     renderNavRoutes() {
         const {notes, folders} = this.state;
@@ -71,7 +99,6 @@ class App extends Component {
                             return (
                                 <NoteListMain
                                     {...routeProps}
-                                    notes={notesForFolder}
                                 />
                             );
                         }}
@@ -90,7 +117,8 @@ class App extends Component {
     }
 
     render() {
-        return (
+      return (
+          <Context.Provider value={{notes: this.state.notes, folders: this.state.folders}}>
             <div className="App">
                 <nav className="App__nav">{this.renderNavRoutes()}</nav>
                 <header className="App__header">
@@ -100,7 +128,8 @@ class App extends Component {
                     </h1>
                 </header>
                 <main className="App__main">{this.renderMainRoutes()}</main>
-            </div>
+          </div>
+          </Context.Provider>
         );
     }
 }
