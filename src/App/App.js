@@ -5,7 +5,7 @@ import NoteListNav from '../NoteListNav/NoteListNav';
 import NotePageNav from '../NotePageNav/NotePageNav';
 import NoteListMain from '../NoteListMain/NoteListMain';
 import NotePageMain from '../NotePageMain/NotePageMain';
-import dummyStore from '../dummy-store';
+//import dummyStore from '../dummy-store';
 import Context from '../Context'
 import apiconfig from '../apiconfig'
 import {getNotesForFolder, findNote, findFolder} from '../notes-helpers';
@@ -42,7 +42,11 @@ class App extends Component {
       })
   }
 
-
+    handleDeleteNote = noteId => {
+        this.setState({
+            notes: this.state.notes.filter(note => note.id !== noteId)
+        })
+    }
 
         // fake date loading from API call
         // setTimeout(() => this.setState(dummyStore), 600);
